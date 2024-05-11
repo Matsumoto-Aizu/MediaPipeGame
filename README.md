@@ -8,6 +8,9 @@
 #### OS: Windows 11
 #### Python バージョン：3.11.4
 #### ライブラリ： MediaPipe (0.10.3) OpenCV (4.8.0)
+## インストール方法
+#### > pip install mediapipe
+#### > pip install opencv-python
 
 ## 参考資料
 #### 1.MediaPipe | Google for Developers
