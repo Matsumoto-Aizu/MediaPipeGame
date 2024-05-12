@@ -4,6 +4,7 @@ import cv2 # OpenCV
 import mediapipe as mp # MediaPipe
 import random # 乱数生成用
 import time # 時間計測用
+import pygame # 効果音再生用
 
 # MediaPipeのHand Trackingインスタンスを作成
 mp_hands = mp.solutions.hands
@@ -21,15 +22,24 @@ elapsed_time = 0
 game_started = False # ゲームがスタートしたかどうか
 
 # モグラの出現時間の設定
-appear_timelimit_normal_mogura = 2
-appear_timelimit_angry_mogura = 5
+appear_timelimit_normal_mogura = 1
+appear_timelimit_angry_mogura = 4
 # 出現するモグラのサイズ
 MIN_SIZE = 80
 MAX_SIZE = 250
-
 # モグラの画像を読み込み  -1を付けてアルファチャンネル(透明度)も読み込む(BGRA形式)
 normal_mogura_img_ori = cv2.imread("../asset/normal_mogura.png",-1)  
 angry_mogura_img_ori = cv2.imread("../asset/angry_mogura.png",-1) 
+
+# 効果音を再生する関数
+def play_mp3(filename):
+    pygame.mixer.init()
+    pygame.mixer.music.load(filename)
+    pygame.mixer.music.play()
+# https://soundeffect-lab.info/sound/button/
+# 効果音のファイル名の保存
+hit_sound_filename = "../asset/hit.mp3" # 決定ボタンを押す12 可愛い音
+escape_sound_filename = "../asset/escape.mp3" # キャンセル３　ビュッ
 
 # モグラのサイズと位置をランダムに設定する関数
 def set_mogura_size_and_position(mogura_img):
@@ -101,7 +111,6 @@ with mp_hands.Hands(
                 # モグラの出現開始時刻を保存
                 appear_time_normal_mogura = time.time()
                 appear_time_angry_mogura = time.time()
-
             if key == 27:  # Escキー
                 break
             continue
@@ -145,10 +154,11 @@ with mp_hands.Hands(
                 angry_mogura_dist = ((cx - (angry_mogura_position[0]+angry_mogura_size//2)) ** 2 + (cy - (angry_mogura_position[1]+angry_mogura_size//2)) ** 2) ** 0.5
 
                 #　ヒット判定の処理　任意の距離（モグラのサイズの3分の1）よりも小さい場合、ヒットとする
-                # ノーマルモグラをヒットした場合、1点加算
+                # ノーマルモグラをヒットした場合、5点加算
                 if normal_mogura_dist < normal_mogura_size//3:
-                    cv2.putText(frame,f"+1",(normal_mogura_position[0],normal_mogura_position[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 0, 0), 3)
-                    points+=1
+                    play_mp3(hit_sound_filename)
+                    cv2.putText(frame,f"+5",(normal_mogura_position[0],normal_mogura_position[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 0, 0), 3)
+                    points+=5
                     # ノーマルモグラの位置とサイズ、出現開始時刻を更新
                     normal_mogura_img,normal_mogura_position=set_mogura_size_and_position(normal_mogura_img_ori)
                     normal_mogura_size = normal_mogura_img.shape[0]
@@ -156,6 +166,7 @@ with mp_hands.Hands(
                     
                 # アングリーモグラをヒットした場合、2点加算され、サイズが50以下になると消滅
                 if angry_mogura_dist < normal_mogura_size//3:
+                    play_mp3(hit_sound_filename)
                     cv2.putText(frame,f"+2",(angry_mogura_position[0],angry_mogura_position[1]+20), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
                     points+=2
                     # アングリーモグラのサイズを減少させる
@@ -163,6 +174,7 @@ with mp_hands.Hands(
                     angry_mogura_img = cv2.resize(angry_mogura_img,(angry_mogura_size,angry_mogura_size))   
                     # アングリーモグラのサイズが50以下になったら消滅
                     if angry_mogura_size <= 50:
+                        play_mp3(hit_sound_filename)
                         # アングリーモグラの位置とサイズ、出現開始時刻を更新
                         angry_mogura_img,angry_mogura_position=set_mogura_size_and_position(angry_mogura_img_ori)
                         angry_mogura_size = angry_mogura_img.shape[0]
@@ -170,6 +182,7 @@ with mp_hands.Hands(
                         
          # ノーマルモグラが一定時間（2秒）ヒットされなかった場合逃げてしまう
         if time.time()-appear_time_normal_mogura >= appear_timelimit_normal_mogura:
+            play_mp3(escape_sound_filename)
             cv2.putText(frame,f"Miss",(normal_mogura_position[0],normal_mogura_position[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 3)
              # ノーマルモグラの位置とサイズ、出現開始時刻を更新
             normal_mogura_img,normal_mogura_position=set_mogura_size_and_position(normal_mogura_img_ori)
@@ -178,6 +191,7 @@ with mp_hands.Hands(
         
         # アングリーモグラが一定時間（5秒）ヒットされなかった場合逃げてしまう
         if time.time()-appear_time_angry_mogura >= appear_timelimit_angry_mogura:
+            play_mp3(escape_sound_filename)
             cv2.putText(frame,f"Miss",(angry_mogura_position[0],angry_mogura_position[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)  
              # アングリーモグラの位置とサイズ、出現開始時刻を更新     
             angry_mogura_img,angry_mogura_position=set_mogura_size_and_position(angry_mogura_img_ori)
@@ -196,8 +210,8 @@ with mp_hands.Hands(
 
         cv2.imshow('Mediapipe Game', frame)
         
-        # ゲームをリセット
-        if cv2.waitKey(10) & 0xFF == ord('q'):
+        #  qキーを押されたらゲームをリセット
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             points = 0
             start_time = time.time()
             elapsed_time = 0
