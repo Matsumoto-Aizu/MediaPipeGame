@@ -13,10 +13,11 @@ https://soundeffect-lab.info/sound/button/
 ## 実行環境
 #### OS: Windows 11
 #### Python バージョン：3.11.4
-#### ライブラリ： MediaPipe (0.10.3) OpenCV (4.8.0)
+#### ライブラリ： MediaPipe (0.10.3) OpenCV (4.8.0) pygame(2.5.2)
 ## インストール方法
 #### > pip install mediapipe
 #### > pip install opencv-python
+#### > pip install pygame
 
 ## 参考資料
 #### 1.MediaPipe | Google for Developers
