@@ -4,8 +4,11 @@
 ### ~/asset/*.png
 2種類のモグラの画像
 ### ~/asset/*.mp3
-hit.mp3:モグラのヒットした音 (決定ボタンを押す12 可愛い音)
+hit.mp3:モグラのヒットした音 (決定ボタンを押す12 可愛い音),
+
 escape.mp3:逃げられた音 (キャンセル３　ビュッ)
+
+https://soundeffect-lab.info/sound/button/
 
 ## 実行環境
 #### OS: Windows 11
