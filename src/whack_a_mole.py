@@ -36,6 +36,8 @@ def play_mp3(filename):
     pygame.mixer.init()
     pygame.mixer.music.load(filename)
     pygame.mixer.music.play()
+    
+
 # https://soundeffect-lab.info/sound/button/
 # 効果音のファイル名の保存
 hit_sound_filename = "../asset/hit.mp3" # 決定ボタンを押す12 可愛い音
